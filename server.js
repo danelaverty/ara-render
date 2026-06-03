@@ -9,11 +9,11 @@ const status = {
 };
 
 // ── Try loading canvas ─────────────────────────────────────────────────────
-let createCanvas, registerFont, loadImage;
+let createCanvas, FontLibrary, loadImage;
 try {
-  const c = require('canvas');
-  createCanvas  = c.createCanvas;
-  registerFont  = c.registerFont;
+  const c = require('skia-canvas');
+  createCanvas  = c.Canvas ? (w,h) => new c.Canvas(w,h) : c.createCanvas;
+  FontLibrary   = c.FontLibrary;
   loadImage     = c.loadImage;
   status.canvas.ok = true;
 } catch(e) {
@@ -55,7 +55,7 @@ async function initFonts() {
   fs.mkdirSync(FONT_DIR, { recursive: true });
   for (const f of FONTS) {
     const p = await dlFont(f);
-    if (registerFont) registerFont(p, { family: f.family, weight: f.weight });
+    if (FontLibrary) FontLibrary.use(f.family, p);
   }
   status.fonts.ok = true;
 }
