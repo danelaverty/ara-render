@@ -19,7 +19,7 @@ const https = require('https');
 const http  = require('http');
 
 // ── Fonts ──────────────────────────────────────────────────────────────────
-const FONT_DIR = '/tmp/ara-fonts';
+const PHOTOS_DIR = '/home/u903000087/domains/mediumpurple-butterfly-714997.hostingersite.com/photos';
 const FONTS = [
   { url: 'https://fonts.gstatic.com/s/firasans/v17/va9E4kDNxMZdWfMOD5VvkrjFYTM.woff2',   file: 'FiraSans-Regular.woff2', family: 'Fira Sans' },
   { url: 'https://fonts.gstatic.com/s/firasans/v17/va9B4kDNxMZdWfMOD5VnZKveRhf6.woff2',   file: 'FiraSans-Bold.woff2',    family: 'Fira Sans' },
