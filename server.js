@@ -8,7 +8,6 @@ const status = {
   startup: new Date().toISOString(),
 };
 
-// ── Try loading canvas ─────────────────────────────────────────────────────
 let createCanvas, GlobalFonts, loadImage;
 try {
   const c = require('@napi-rs/canvas');
@@ -20,9 +19,8 @@ try {
   status.canvas.error = e.message;
 }
 
-// ── Try loading fonts ──────────────────────────────────────────────────────
-const fs   = require('fs');
-const path = require('path');
+const fs    = require('fs');
+const path  = require('path');
 const https = require('https');
 
 const FONT_DIR = '/tmp/ara-fonts';
@@ -30,12 +28,12 @@ const FONTS = [
   {
     url: 'https://fonts.gstatic.com/s/firasans/v17/va9E4kDNxMZdWfMOD5VvkrjFYTM.woff2',
     file: 'FiraSans-Regular.woff2',
-    family: 'Fira Sans', weight: '400',
+    family: 'Fira Sans',
   },
   {
     url: 'https://fonts.gstatic.com/s/firasans/v17/va9B4kDNxMZdWfMOD5VnZKveRhf6.woff2',
     file: 'FiraSans-Bold.woff2',
-    family: 'Fira Sans', weight: '700',
+    family: 'Fira Sans',
   },
 ];
 
@@ -60,7 +58,6 @@ async function initFonts() {
   status.fonts.ok = true;
 }
 
-// ── Routes ─────────────────────────────────────────────────────────────────
 app.get('/', (req, res) => {
   res.json({ status: 'ok', message: 'ARA Render Service is running.' });
 });
@@ -68,29 +65,34 @@ app.get('/', (req, res) => {
 app.get('/health', (req, res) => {
   const nodeModulesPath = path.join(__dirname, 'node_modules');
   let installedModules = [];
-  try {
-    installedModules = fs.readdirSync(nodeModulesPath);
-  } catch(e) {
-    installedModules = ['ERROR: ' + e.message];
-  }
-  res.json({
-    uptime:    process.uptime(),
-    node:      process.version,
-    platform:  process.platform,
-    arch:      process.arch,
-    dirname:   __dirname,
-    status,
-    installedModules,
-  });
+  try { installedModules = fs.readdirSync(nodeModulesPath); } catch(e) { installedModules = ['ERROR: ' + e.message]; }
+  res.json({ uptime: process.uptime(), node: process.version, platform: process.platform, arch: process.arch, dirname: __dirname, status, installedModules });
 });
 
-// ── Startup ────────────────────────────────────────────────────────────────
+app.post('/render-test', async (req, res) => {
+  try {
+    if (!createCanvas) throw new Error('canvas not loaded: ' + status.canvas.error);
+    const canvas = createCanvas(540, 675);
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#f5efe8';
+    ctx.fillRect(0, 0, 540, 675);
+    ctx.fillStyle = '#9b7b6e';
+    ctx.font = 'bold 40px "Fira Sans"';
+    ctx.fillText('ARA Render Test', 40, 100);
+    ctx.font = '24px "Fira Sans"';
+    ctx.fillText('Canvas is working!', 40, 160);
+    const png = await canvas.encode('png');
+    res.set('Content-Type', 'image/png');
+    res.send(png);
+  } catch(err) {
+    res.status(500).json({ status: 'error', message: err.message });
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 
 initFonts()
   .then(() => console.log('[startup] fonts ok'))
   .catch(e => { status.fonts.error = e.message; console.error('[startup] fonts failed:', e.message); });
 
-app.listen(PORT, () => {
-  console.log(`ARA Render Service listening on port ${PORT}`);
-});
+app.listen(PORT, () => console.log(`ARA Render Service listening on port ${PORT}`));
