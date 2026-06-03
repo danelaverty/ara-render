@@ -9,12 +9,12 @@ const status = {
 };
 
 // ── Try loading canvas ─────────────────────────────────────────────────────
-let createCanvas, FontLibrary, loadImage;
+let createCanvas, GlobalFonts, loadImage;
 try {
-  const c = require('skia-canvas');
-  createCanvas  = c.Canvas ? (w,h) => new c.Canvas(w,h) : c.createCanvas;
-  FontLibrary   = c.FontLibrary;
-  loadImage     = c.loadImage;
+  const c = require('@napi-rs/canvas');
+  createCanvas = c.createCanvas;
+  GlobalFonts  = c.GlobalFonts;
+  loadImage    = c.loadImage;
   status.canvas.ok = true;
 } catch(e) {
   status.canvas.error = e.message;
@@ -55,7 +55,7 @@ async function initFonts() {
   fs.mkdirSync(FONT_DIR, { recursive: true });
   for (const f of FONTS) {
     const p = await dlFont(f);
-    if (FontLibrary) FontLibrary.use(f.family, p);
+    if (GlobalFonts) GlobalFonts.registerFromPath(p, f.family);
   }
   status.fonts.ok = true;
 }
