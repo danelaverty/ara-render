@@ -1,4 +1,4 @@
-const VERSION = '4.3.0';
+const VERSION = '4.4.0';
 const express = require('express');
 const app = express();
 app.use(express.json({ limit: '20mb' }));
