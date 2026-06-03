@@ -66,17 +66,21 @@ app.get('/', (req, res) => {
 });
 
 app.get('/health', (req, res) => {
+  const nodeModulesPath = path.join(__dirname, 'node_modules');
+  let installedModules = [];
+  try {
+    installedModules = fs.readdirSync(nodeModulesPath);
+  } catch(e) {
+    installedModules = ['ERROR: ' + e.message];
+  }
   res.json({
     uptime:    process.uptime(),
-    memory:    process.memoryUsage(),
     node:      process.version,
     platform:  process.platform,
     arch:      process.arch,
+    dirname:   __dirname,
     status,
-    env: {
-      PORT: process.env.PORT,
-      NODE_ENV: process.env.NODE_ENV,
-    },
+    installedModules,
   });
 });
 
