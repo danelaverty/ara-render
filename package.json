@@ -1,6 +1,6 @@
 {
   "name": "ara-render",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "ARA Instagram post render service",
   "main": "server.js",
   "scripts": {
