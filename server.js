@@ -1,8 +1,25 @@
 const express = require('express');
 const puppeteer = require('puppeteer');
+const { execSync } = require('child_process');
+const path = require('path');
 const app = express();
 
 app.use(express.json());
+
+// Ensure Chrome is installed before handling any requests
+const cacheDir = process.env.PUPPETEER_CACHE_DIR || path.join(__dirname, '.cache', 'puppeteer');
+process.env.PUPPETEER_CACHE_DIR = cacheDir;
+
+try {
+  console.log('[startup] Installing Chrome if needed...');
+  execSync(`npx puppeteer browsers install chrome`, {
+    env: { ...process.env, PUPPETEER_CACHE_DIR: cacheDir },
+    stdio: 'inherit',
+  });
+  console.log('[startup] Chrome ready.');
+} catch (e) {
+  console.error('[startup] Chrome install failed:', e.message);
+}
 
 app.get('/', (req, res) => {
   res.json({ status: 'ok', message: 'ARA Render Service is running.' });
