@@ -1,4 +1,4 @@
-const VERSION = '4.2.0';
+const VERSION = '4.3.0';
 const express = require('express');
 const app = express();
 app.use(express.json({ limit: '20mb' }));
@@ -238,7 +238,7 @@ async function renderFP(data) {
   // Practice name
   const titlePx = Math.round(Number(titleFontSize) * 16);
   ctx.font = `700 ${titlePx}px "Fira Sans"`;
-  const titleLines = wrapText(ctx, practice || name, 340);
+  const titleLines = wrapText(ctx, practice || name, W - TX * 2);
   for (const line of titleLines) {
     const lw = ctx.measureText(line).width;
     ctx.fillStyle = textBG;
