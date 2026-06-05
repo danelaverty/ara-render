@@ -151,12 +151,6 @@ app.get('/practitioners', async (req, res) => {
 });
 
 // Render a single practitioner by ARAID (GET for browser testing, POST for API)
-app.get('/render/:araid', async (req, res) => {
-  return renderRoute(req, res);
-});
-app.post('/render/:araid', async (req, res) => {
-  return renderRoute(req, res);
-});
 async function renderRoute(req, res) {
   try {
     const list = await fetchPractitioners();
@@ -173,7 +167,9 @@ async function renderRoute(req, res) {
     console.error('[render] error:', e.message);
     res.status(500).json({ error: e.message });
   }
-});
+}
+app.get('/render/:araid',  renderRoute);
+app.post('/render/:araid', renderRoute);
 
 // ── Startup ───────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 3000;
