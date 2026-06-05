@@ -204,6 +204,46 @@ async function loadTemplates() {
   ]);
 }
 
+// Map practitioner data to FP state format and apply
+function applyPractitionerToFP(p) {
+  const fpState = {
+    header:           p.epithet || '',
+    supersupertitle: 'Featured Practice',
+    supertitle:      p.practice || '',
+    title:           p.name || '',
+    subtitle:        p.city || '',
+    subtitle2:       p.state || '',
+    subsupertitle:   p.instagram ? `@${p.instagram}` : '',
+    detail1:         '',
+    detail2:         '',
+    detail3:         '',
+    detail4:         '',
+    mainTextFP:      p.question || '',
+    bodyTextFP:      p.answer || '',
+    tipNumFP:        '',
+    photoPlacement:  'right',
+    photoShape:      'rounded',
+    photoBorder:     'soft',
+    subtitleSeparate: p.subtitleSeparate ? true : false,
+    mainTextTop:     p.mainTextTop || '100',
+    mainTextWidth:   p.mainTextWidth || '320',
+    bodyTextTop:     p.bodyTextTop || '450',
+    bodyTextLeft:    p.bodyTextLeft || '20',
+    panX:            p.imagePanX || '0',
+    panY:            p.imagePanY || '0',
+    fontSizeTitle:   p.titleFontSize || '2.5',
+    fontSizeFP:      p.fontSize || '1.2',
+    photoSize:       '180',
+  };
+
+  applyFPState(fpState);
+  applyTheme(0, true);
+  if (p.theme) applyTheme(THEMES.findIndex(t => t.name === p.theme), true);
+  if (p.decor) applyDecor(p.decor, true);
+  if (p.imageFile) loadFPPhotoFromUrl(`/images/${p.imageFile}`);
+  redrawPhoto();
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   await loadTemplates();
   applyTheme(0, true);
