@@ -1,4 +1,4 @@
-const VERSION = '2.0.2';
+const VERSION = '2.0.3';
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
@@ -139,14 +139,18 @@ async function renderPractitioner(p) {
       applyPractitionerToFP(practitioner);
     }, p);
 
-    // Wait for fonts and photo to load
+    // Wait for fonts, images, and canvas to settle
     await page.waitForFunction(() => {
+      const canvas = document.getElementById('post-canvas');
+      const rect = canvas ? canvas.getBoundingClientRect() : null;
+      const hasSize = rect && rect.height > 0 && rect.width > 0;
       const img = document.querySelector('#photo-wrap img, #photo-wrap canvas');
-      return document.fonts.ready.then(() => true);
-    }, { timeout: 10000 });
+      const imgLoaded = img && img.complete;
+      return document.fonts.ready.then(() => hasSize && imgLoaded);
+    }, { timeout: 15000 });
 
     // Extra settle time for canvas redraws
-    await new Promise(r => setTimeout(r, 1500));
+    await new Promise(r => setTimeout(r, 2000));
 
     // Screenshot just the post canvas
     const el = await page.$('#post-canvas');
