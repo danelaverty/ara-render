@@ -150,8 +150,14 @@ app.get('/practitioners', async (req, res) => {
   }
 });
 
-// Render a single practitioner by ARAID
+// Render a single practitioner by ARAID (GET for browser testing, POST for API)
+app.get('/render/:araid', async (req, res) => {
+  return renderRoute(req, res);
+});
 app.post('/render/:araid', async (req, res) => {
+  return renderRoute(req, res);
+});
+async function renderRoute(req, res) {
   try {
     const list = await fetchPractitioners();
     const p    = list.find(x => String(x.araid) === String(req.params.araid));
