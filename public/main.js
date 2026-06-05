@@ -237,8 +237,11 @@ function applyPractitionerToFP(p) {
     applyTheme(0, true);
   }
   
-  // Apply decor if specified
-  if (p.decor) applyDecor(p.decor, true);
+  // Apply decor if specified (normalize spaces in names to hyphens)
+  if (p.decor) {
+    const decorName = p.decor.toLowerCase().replace(/\s+/g, '-');
+    applyDecor(decorName, true);
+  }
   
   // Load photo if specified
   if (p.imageFile) loadFPPhotoFromUrl(`/images/${p.imageFile}`);
