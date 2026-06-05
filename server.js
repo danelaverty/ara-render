@@ -1,9 +1,15 @@
-const VERSION = '2.0.1';
+const VERSION = '2.0.2';
 const express = require('express');
-const puppeteer = require('puppeteer');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const { spawn } = require('child_process');
+
+const puppeteerCacheDir = path.join(__dirname, '.cache', 'puppeteer');
+process.env.PUPPETEER_CACHE_DIR = process.env.PUPPETEER_CACHE_DIR || puppeteerCacheDir;
+fs.mkdirSync(process.env.PUPPETEER_CACHE_DIR, { recursive: true });
+
+const puppeteer = require('puppeteer');
 
 const app = express();
 app.use(express.json());
@@ -35,6 +41,29 @@ function writeAraKey() {
   const content = `const SHEETS_API_KEY = ${JSON.stringify(key)};\nconst SHEETS_WRITE_URL = ${JSON.stringify(url)};\n`;
   fs.writeFileSync(path.join(__dirname, 'public', 'ara-key.js'), content);
   console.log('[ara-key] written');
+}
+
+async function ensureChromiumInstalled() {
+  try {
+    const execPath = puppeteer.executablePath && puppeteer.executablePath();
+    if (execPath && fs.existsSync(execPath)) {
+      console.log('[puppeteer] already installed at', execPath);
+      return;
+    }
+  } catch (err) {
+    console.log('[puppeteer] execPath check failed:', err.message || err);
+  }
+
+  console.log('[puppeteer] installing Chrome into cache:', process.env.PUPPETEER_CACHE_DIR);
+  await new Promise((resolve, reject) => {
+    const installScript = path.join(__dirname, 'node_modules', 'puppeteer', 'install.mjs');
+    const child = spawn(process.execPath, [installScript], { stdio: 'inherit' });
+    child.on('close', code => {
+      if (code === 0) return resolve();
+      reject(new Error(`puppeteer install failed with exit code ${code}`));
+    });
+    child.on('error', reject);
+  });
 }
 
 // ── Fetch practitioner list from Google Sheets ────────────────────────────
@@ -191,5 +220,14 @@ app.post('/render/:araid', renderRoute);
 
 // ── Startup ───────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 3000;
-writeAraKey();
-app.listen(PORT, () => console.log(`ARA Render Service v${VERSION} on port ${PORT}`));
+
+async function start() {
+  writeAraKey();
+  await ensureChromiumInstalled();
+  app.listen(PORT, () => console.log(`ARA Render Service v${VERSION} on port ${PORT}`));
+}
+
+start().catch(err => {
+  console.error('[startup] fatal error:', err && err.stack ? err.stack : err);
+  process.exit(1);
+});
