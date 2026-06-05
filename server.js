@@ -1,4 +1,4 @@
-const VERSION = '2.0.0';
+const VERSION = '2.0.1';
 const express = require('express');
 const puppeteer = require('puppeteer');
 const multer = require('multer');
@@ -83,12 +83,21 @@ async function fetchPractitioners() {
 
 // ── Render a practitioner to PNG via Puppeteer ────────────────────────────
 async function renderPractitioner(p) {
-  const browser = await puppeteer.launch({
+  let browser;
+  const launchOpts = {
     headless: 'new',
     args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
-  });
+  };
 
   try {
+    console.log('[puppeteer] launching with options:', JSON.stringify(launchOpts));
+    if (typeof puppeteer.executablePath === 'function') {
+      try { console.log('[puppeteer] exec path hint:', puppeteer.executablePath()); } catch (e) {}
+    }
+
+    browser = await puppeteer.launch(launchOpts);
+    console.log('[puppeteer] launched');
+
     const page = await browser.newPage();
     await page.setViewport({ width: 540, height: 675 });
 
@@ -115,8 +124,17 @@ async function renderPractitioner(p) {
     const png = await el.screenshot({ type: 'png' });
     return png;
 
+  } catch (err) {
+    console.error('[puppeteer] launch/render error:', err && err.stack ? err.stack : err);
+    throw err;
   } finally {
-    await browser.close();
+    if (browser) {
+      try {
+        await browser.close();
+      } catch (closeErr) {
+        console.error('[puppeteer] error closing browser:', closeErr && closeErr.stack ? closeErr.stack : closeErr);
+      }
+    }
   }
 }
 
