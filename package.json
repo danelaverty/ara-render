@@ -1,6 +1,6 @@
 {
   "name": "ara-render",
-  "version": "1.0.8",
+  "version": "2.0.0",
   "description": "ARA Instagram post render service",
   "main": "server.js",
   "scripts": {
@@ -8,7 +8,8 @@
   },
   "dependencies": {
     "express": "^4.18.2",
-    "@napi-rs/canvas": "^0.1.53",
-    "axios": "^1.6.0"
+    "puppeteer": "^22.0.0",
+    "axios": "^1.6.0",
+    "multer": "^1.4.5-lts.1"
   }
 }
