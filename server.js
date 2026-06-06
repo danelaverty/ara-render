@@ -1,4 +1,4 @@
-const VERSION = '2.0.4';
+const VERSION = '2.0.5';
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
@@ -139,20 +139,25 @@ async function renderPractitioner(p) {
       applyPractitionerToFP(practitioner);
     }, p);
 
-    // Wait for fonts, optional image loading, and canvas to settle
-    await page.waitForFunction(() => {
+    // Wait a bit for the page to settle, then verify canvas size.
+    await page.waitForTimeout(3000);
+
+    const dims = await page.evaluate(() => {
       const canvas = document.getElementById('post-canvas');
-      const rect = canvas ? canvas.getBoundingClientRect() : null;
-      const hasSize = rect && rect.height > 0 && rect.width > 0;
-      const img = document.querySelector('#photo-wrap img');
-      const imgReady = !img || img.complete;
-      return document.fonts.ready.then(() => hasSize && imgReady);
-    }, { timeout: 20000 });
+      const rect = canvas ? canvas.getBoundingClientRect() : { width: 0, height: 0 };
+      return {
+        readyState: document.readyState,
+        width: rect.width,
+        height: rect.height,
+        photoCount: document.querySelectorAll('#photo-wrap img').length,
+        hasPhotoCanvas: !!document.querySelector('#photo-wrap canvas'),
+      };
+    });
+    console.log('[render] canvas dims', dims);
+    if (!dims.width || !dims.height) {
+      throw new Error(`Render canvas has invalid size: ${dims.width}x${dims.height}`);
+    }
 
-    // Extra settle time for canvas redraws
-    await new Promise(r => setTimeout(r, 2000));
-
-    // Screenshot just the post canvas
     const el = await page.$('#post-canvas');
     const png = await el.screenshot({ type: 'png' });
     return png;
